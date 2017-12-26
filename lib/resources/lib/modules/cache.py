@@ -218,7 +218,7 @@ def cache_clear_all():
     cache_clear()
     cache_clear_meta()
     cache_clear_providers()
-        
+
 def _get_connection_cursor():
     conn = _get_connection()
     return conn.cursor()
@@ -248,7 +248,7 @@ def _get_connection_providers():
     conn = db.connect(control.providercacheFile)
     conn.row_factory = _dict_factory
     return conn
-    
+
 def _get_connection_cursor_search():
     conn = _get_connection_search()
     return conn.cursor()
@@ -290,17 +290,17 @@ def cache_version_check():
     if _find_cache_version():
         cache_clear(); cache_clear_meta(); cache_clear_providers()
         control.infoDialog(control.lang(32057).encode('utf-8'), sound=True, icon='INFO')
-        
+
 def _find_cache_version():
 
     import os
     versionFile = os.path.join(control.dataPath, 'cache.v')
-    try: 
+    try:
         with open(versionFile, 'rb') as fh: oldVersion = fh.read()
     except: oldVersion = '0'
     try:
         curVersion = control.addon('script.module.covenant').getAddonInfo('version')
-        if oldVersion != curVersion: 
+        if oldVersion != curVersion:
             with open(versionFile, 'wb') as fh: fh.write(curVersion)
             return True
         else: return False

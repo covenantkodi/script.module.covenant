@@ -71,7 +71,7 @@ class movies:
         self.oscars_link = 'http://www.imdb.com/search/title?title_type=feature,tv_movie&production_status=released&groups=oscar_best_picture_winners&sort=year,desc&count=40&start=1'
         self.theaters_link = 'http://www.imdb.com/search/title?title_type=feature&num_votes=1000,&release_date=date[365],date[0]&sort=release_date_us,desc&count=40&start=1'
         self.year_link = 'http://www.imdb.com/search/title?title_type=feature,tv_movie&num_votes=100,&production_status=released&year=%s,%s&sort=moviemeter,asc&count=40&start=1'
-        
+
         if self.hidecinema == 'true':
             self.popular_link = 'http://www.imdb.com/search/title?title_type=feature,tv_movie&num_votes=1000,&production_status=released&groups=top_1000&release_date=,date[90]&sort=moviemeter,asc&count=40&start=1'
             self.views_link = 'http://www.imdb.com/search/title?title_type=feature,tv_movie&num_votes=1000,&production_status=released&sort=num_votes,desc&release_date=,date[90]&count=40&start=1'
@@ -171,15 +171,15 @@ class movies:
         navigator.navigator().addDirectoryItem(32603, 'movieSearchnew', 'search.png', 'DefaultMovies.png')
         try: from sqlite3 import dbapi2 as database
         except: from pysqlite2 import dbapi2 as database
-        
+
         dbcon = database.connect(control.searchFile)
         dbcur = dbcon.cursor()
-             
+
         try:
             dbcur.executescript("CREATE TABLE IF NOT EXISTS movies (ID Integer PRIMARY KEY AUTOINCREMENT, term);")
         except:
             pass
-            
+
         dbcur.execute("SELECT * FROM movies ORDER BY ID DESC")
         lst = []
 
@@ -190,12 +190,12 @@ class movies:
                 navigator.navigator().addDirectoryItem(term, 'movieSearchterm&name=%s' % term, 'search.png', 'DefaultMovies.png')
                 lst += [(term)]
         dbcur.close()
-        
+
         if delete_option:
             navigator.navigator().addDirectoryItem(32605, 'clearCacheSearch', 'tools.png', 'DefaultAddonProgram.png')
 
         navigator.navigator().endDirectory()
-        
+
     def search_new(self):
             control.idle()
 
@@ -204,10 +204,10 @@ class movies:
             q = k.getText() if k.isConfirmed() else None
 
             if (q == None or q == ''): return
-            
+
             try: from sqlite3 import dbapi2 as database
             except: from pysqlite2 import dbapi2 as database
-            
+
             dbcon = database.connect(control.searchFile)
             dbcur = dbcon.cursor()
             dbcur.execute("INSERT INTO movies VALUES (?,?)", (None,q))
@@ -682,7 +682,7 @@ class movies:
                 name = name.encode('utf-8')
 
                 url = client.parseDOM(item, 'a', ret='href')[0]
-                url = url.split('/list/', 1)[-1].replace('/', '')
+                url = url.split('/list/', 1)[-1]
                 url = self.imdblist_link % url
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
@@ -796,13 +796,13 @@ class movies:
 
             try:
                 artmeta = True
-                #if self.fanart_tv_user == '': raise Exception()           
+                #if self.fanart_tv_user == '': raise Exception()
                 art = client.request(self.fanart_tv_art_link % imdb, headers=self.fanart_tv_headers, timeout='10', error=True)
                 try: art = json.loads(art)
                 except: artmeta = False
             except:
                 pass
-                
+
             try:
                 poster2 = art['movieposter']
                 poster2 = [x for x in poster2 if x.get('lang') == self.lang][::-1] + [x for x in poster2 if x.get('lang') == 'en'][::-1] + [x for x in poster2 if x.get('lang') in ['00', '']][::-1]

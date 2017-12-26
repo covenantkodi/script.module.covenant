@@ -24,6 +24,7 @@ from resources.lib.modules import cleantitle
 from resources.lib.modules import client
 from resources.lib.modules import source_utils
 from resources.lib.modules import dom_parser
+from resources.lib.modules import directstream
 #from resources.lib.modules import log_utils
 
 class source:
@@ -63,10 +64,10 @@ class source:
         try:
             sources = []
             if url == None: return sources
-        
+
             hostDict += ['akamaized.net', 'google.com', 'picasa.com', 'blogspot.com']
             result = client.request(url, timeout=10)
-            
+
             dom = dom_parser.parse_dom(result, 'a', req='data-video')
             urls = [i.attrs['data-video'] if i.attrs['data-video'].startswith('https') else 'https:' + i.attrs['data-video'] for i in dom]
 
@@ -82,8 +83,8 @@ class source:
                     hostDict += [base]
                     dom = dom_parser.parse_dom(result, 'a', req=['href','id'])
                     dom = [(i.attrs['href'].replace('./embed',base+'embed'), i.attrs['id']) for i in dom if i]
-                    dom = [(re.findall("var\s*ifleID\s*=\s*'([^']+)", client.request(i[0]))[0], i[1]) for i in dom if i]                        
-                if dom:                
+                    dom = [(re.findall("var\s*ifleID\s*=\s*'([^']+)", client.request(i[0]))[0], i[1]) for i in dom if i]
+                if dom:
                     try:
                         for r in dom:
                             valid, hoster = source_utils.is_host_valid(r[0], hostDict)
@@ -93,8 +94,8 @@ class source:
                             urls, host, direct = source_utils.check_directstreams(r[0], hoster)
                             for x in urls:
                                 if direct: size = source_utils.get_size(x['url'])
-                                if size: sources.append({'source': host, 'quality': quality, 'language': 'en', 'url': x['url'], 'direct': direct, 'debridonly': False, 'info': size})         
-                                else: sources.append({'source': host, 'quality': quality, 'language': 'en', 'url': x['url'], 'direct': direct, 'debridonly': False})         
+                                if size: sources.append({'source': host, 'quality': quality, 'language': 'en', 'url': x['url'], 'direct': direct, 'debridonly': False, 'info': size})
+                                else: sources.append({'source': host, 'quality': quality, 'language': 'en', 'url': x['url'], 'direct': direct, 'debridonly': False})
                     except: pass
                 else:
                     valid, hoster = source_utils.is_host_valid(url, hostDict)

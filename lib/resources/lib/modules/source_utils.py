@@ -44,7 +44,7 @@ def get_release_quality(release_name, release_link=None):
 
     try:
         quality = None
-        
+
         release_name = release_name.upper()
 
         fmt = re.sub('(.+)(\.|\(|\[|\s)(\d{4}|S\d*E\d*|S\d*)(\.|\)|\]|\s)', '', release_name)
@@ -64,7 +64,7 @@ def get_release_quality(release_name, release_link=None):
                 if '1080' in release_link: quality = '1080p'
                 elif '720' in release_link: quality = '720p'
                 elif '.hd' in release_link: quality = 'SD'
-                else: 
+                else:
                     if any(i in ['dvdscr', 'r5', 'r6'] for i in release_link): quality = 'SCR'
                     elif any(i in ['camrip', 'tsrip', 'hdcam', 'hdts', 'dvdcam', 'dvdts', 'cam', 'telesync', 'ts'] for i in release_link): quality = 'CAM'
                     else: quality = 'SD'
@@ -76,13 +76,13 @@ def get_release_quality(release_name, release_link=None):
         return quality, info
     except:
         return 'SD', []
-        
+
 def getFileType(url):
 
     try: url = url.lower()
     except: url = str(url)
     type = ''
-    
+
     if 'bluray' in url: type += ' BLURAY /'
     if '.web-dl' in url: type += ' WEB-DL /'
     if '.web.' in url: type += ' WEB-DL /'
@@ -104,7 +104,7 @@ def getFileType(url):
     if 'h.264' in url: type += ' H.264 /'
     if '.x264' in url: type += ' x264 /'
     if '.x265' in url: type += ' x265 /'
-    if 'subs' in url: 
+    if 'subs' in url:
         if type != '': type += ' - WITH SUBS'
         else: type = 'SUBS'
     type = type.rstrip('/')
@@ -115,6 +115,7 @@ def check_sd_url(release_link):
     try:
         release_link = release_link.lower()
         if '1080' in release_link: quality = '1080p'
+        elif 'bluray' in release_link: quality = '1080p'
         elif '720' in release_link: quality = '720p'
         elif '.hd.' in release_link: quality = '720p'
         elif any(i in ['dvdscr', 'r5', 'r6'] for i in release_link): quality = 'SCR'
@@ -192,7 +193,7 @@ def aliases_to_array(aliases, filter=None):
 
 
 def append_headers(headers):
-    return '|%s' % '&'.join(['%s=%s' % (key, urllib.quote_plus(headers[key])) for key in headers])
+    return '|%s' % '&'.join(['%s=%s' % (key, headers[key]) for key in headers])
 
 def get_size(url):
     try:
@@ -212,7 +213,7 @@ def convert_size(size_bytes):
    s = round(size_bytes / p, 2)
    if size_name[i] == 'B' or size_name[i] == 'KB': return None
    return "%s %s" % (s, size_name[i])
-   
+
 def check_directstreams(url, hoster='', quality='SD'):
     urls = []
     host = hoster
@@ -232,7 +233,7 @@ def check_directstreams(url, hoster='', quality='SD'):
     elif any(x in url for x in ['akamaized', 'blogspot', 'ocloud.stream']):
         urls = [{'url': url}]
         if urls: host = 'CDN'
-        
+
     direct = True if urls else False
 
     if not urls: urls = [{'quality': quality, 'url': url}]

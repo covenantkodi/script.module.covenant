@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-    Exodus Add-on
-    Copyright (C) 2016 Exodus
+    Covenant Add-on
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,11 +18,10 @@
 '''
 
 
-import re,urllib,urlparse,hashlib,random,string,json,base64,sys
+import re,urllib,urlparse,json,base64
 
 from resources.lib.modules import cleantitle
 from resources.lib.modules import client
-from resources.lib.modules import cache
 from resources.lib.modules import directstream
 from resources.lib.modules import jsunfuck
 
@@ -50,6 +48,7 @@ param = retA()'''
 
 class source:
     def __init__(self):
+
         self.priority = 1
         self.language = ['en']
         self.domains = ['yesmovies.to']
@@ -193,6 +192,9 @@ class source:
                             url = [i[0] for i in url if i]
 
                             for s in url:
+                                if 'lh3.googleusercontent.com' in s['url']:
+                                    s['url'] = directstream.googleredirect(s['url'])
+                                    
                                 sources.append({'source': 'gvideo', 'quality': s['quality'], 'language': 'en',
                                                 'url': s['url'], 'direct': True, 'debridonly': False})
                     except:

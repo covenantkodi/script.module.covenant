@@ -29,8 +29,8 @@ class source:
     def __init__(self):
         self.priority = 1
         self.language = ['en']
-        self.domains = ['watchfree.to','watchfree.unblockall.org']
-        self.base_link = 'http://watchfree.unblockall.org'
+        self.domains = ['watchfree.to','watchfree.unblockall.org', 'itswatchseries.to']
+        self.base_link = 'http://itswatchseries.to'
         self.moviesearch_link = '/?keyword=%s&search_section=1'
         self.tvsearch_link = '/?keyword=%s&search_section=2'
 

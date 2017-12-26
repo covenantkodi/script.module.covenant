@@ -48,11 +48,11 @@ class sources:
 
     def play(self, title, year, imdb, tvdb, season, episode, tvshowtitle, premiered, meta, select):
         try:
-        
+
             url = None
-            
+
             control.moderator()
-            
+
             items = self.getSources(title, year, imdb, tvdb, season, episode, tvshowtitle, premiered)
 
             select = control.setting('hosts.mode') if select == None else select
@@ -67,7 +67,7 @@ class sources:
                 if select == '1' and 'plugin' in control.infoLabel('Container.PluginName'):
                     control.window.clearProperty(self.itemProperty)
                     control.window.setProperty(self.itemProperty, json.dumps(items))
-                    
+
                     control.window.clearProperty(self.metaProperty)
                     control.window.setProperty(self.metaProperty, meta)
 
@@ -297,7 +297,7 @@ class sources:
             pass
 
     def getSources(self, title, year, imdb, tvdb, season, episode, tvshowtitle, premiered, quality='HD', timeout=30):
-        
+
         progressDialog = control.progressDialog if control.setting('progress.dialog') == '0' else control.progressDialogBG
         progressDialog.create(control.addonInfo('name'), '')
         progressDialog.update(0)
@@ -305,7 +305,7 @@ class sources:
         self.prepareSources()
 
         sourceDict = self.sourceDict
-        
+
         progressDialog.update(0, control.lang(32600).encode('utf-8'))
 
         content = 'movie' if tvshowtitle == None else 'episode'
@@ -315,7 +315,7 @@ class sources:
         else:
             sourceDict = [(i[0], i[1], getattr(i[1], 'tvshow', None)) for i in sourceDict]
             genres = trakt.getGenre('show', 'tvdb', tvdb)
-        
+
         sourceDict = [(i[0], i[1], i[2]) for i in sourceDict if not hasattr(i[1], 'genre_filter') or not i[1].genre_filter or any(x in i[1].genre_filter for x in genres)]
         sourceDict = [(i[0], i[1]) for i in sourceDict if not i[2] == None]
 
@@ -365,25 +365,25 @@ class sources:
 
         try: timeout = int(control.setting('scrapers.timeout.1'))
         except: pass
-        
+
         quality = control.setting('hosts.quality')
         if quality == '': quality = '0'
-        
+
         line1 = line2 = line3 = ""
-        
+
         source_4k = d_source_4k = 0
         source_1080 = d_source_1080 = 0
         source_720 = d_source_720 = 0
         source_sd = d_source_sd = 0
         total = d_total = 0
-        
+
         debrid_list = debrid.debrid_resolvers
         debrid_status = debrid.status()
-        
+
         total_format = '[COLOR %s][B]%s[/B][/COLOR]'
         pdiag_format = ' 4K: %s | 1080p: %s | 720p: %s | SD: %s | %s: %s'.split('|')
         pdiag_bg_format = '4K:%s(%s)|1080p:%s(%s)|720p:%s(%s)|SD:%s(%s)|T:%s(%s)'.split('|')
-        
+
         for i in range(0, 4 * timeout):
             try:
                 if xbmc.abortRequested == True: return sys.exit()
@@ -412,7 +412,7 @@ class sources:
                         source_sd = len([e for e in self.sources if e['quality'] == 'SD' and e['debridonly'] == False])
                     else:
                         source_sd = len([e for e in self.sources if e['quality'] == 'SD' and e['debridonly'] == False])
-                    
+
                     total = source_4k + source_1080 + source_720 + source_sd
 
                     if debrid_status:
@@ -439,7 +439,7 @@ class sources:
                         else:
                             for d in debrid_list:
                                 d_source_sd = len([e for e in self.sources if e['quality'] == 'SD' and d.valid_url('', e['source'])])
-                                 
+
                         d_total = d_source_4k + d_source_1080 + d_source_720 + d_source_sd
 
                 if debrid_status:
@@ -538,7 +538,7 @@ class sources:
                             progressDialog.update(max(1, percent), line1, line2)
                     except:
                         break
-                        
+
                 time.sleep(0.5)
             except:
                 pass
@@ -548,7 +548,7 @@ class sources:
                 if progressDialog: progressDialog.update(100, control.lang(30726).encode('utf-8'), control.lang(30731).encode('utf-8'))
 
                 items = self.sourcesFilter()
-                
+
                 if quality == 'RD': items = [i for i in items if i['debrid'] != '']
                 elif quality == 'SD': items = [i for i in items if i['quality'] == 'SD' and i['debrid'] == '']
                 elif quality == 'HD': items = [i for i in items if i['quality'] != 'SD']
@@ -559,19 +559,19 @@ class sources:
                 try: progressDialog.close()
                 except: pass
 
-                if quality == 'AUTO': 
+                if quality == 'AUTO':
                     u = self.sourcesDirect(items)
                     return u
                 else:
                     meta = '{"title": "%s", "year": "%s", "imdb": "%s"}' % (title, year, imdb)
                     '''control.window.clearProperty("plugin.video.bennu.container.items")
                     control.window.setProperty("plugin.video.bennu.container.items", json.dumps(items))
-                    
+
                     control.window.clearProperty("plugin.video.bennu.container.meta")
                     control.window.setProperty("plugin.video.bennu.container.meta", meta)'''
                     control.window.clearProperty(self.itemProperty)
                     control.window.setProperty(self.itemProperty, json.dumps(items))
-                    
+
                     control.window.clearProperty(self.metaProperty)
                     control.window.setProperty(self.metaProperty, meta)
 
@@ -584,7 +584,7 @@ class sources:
                 try: progressDialog.close()
                 except: pass
                 return
-        else: 
+        else:
             try: progressDialog.close()
             except: pass
 
@@ -607,7 +607,7 @@ class sources:
 
 
     def getMovieSource(self, title, localtitle, aliases, year, imdb, source, call):
-    
+
         try:
             dbcon = database.connect(self.sourceFile)
             dbcur = dbcon.cursor()
@@ -623,7 +623,7 @@ class sources:
             except:
                 pass
         ''' END '''
-        
+
         try:
             sources = []
             dbcur.execute("SELECT * FROM rel_src WHERE source = '%s' AND imdb_id = '%s' AND season = '%s' AND episode = '%s'" % (source, imdb, '', ''))
@@ -769,7 +769,7 @@ class sources:
     def sourcesFilter(self):
         provider = control.setting('hosts.sort.provider')
         if provider == '': provider = 'false'
-        
+
         quality = control.setting('hosts.quality')
         if quality == '': quality = '0'
 
@@ -786,7 +786,7 @@ class sources:
         for i in self.sources:
             if 'checkquality' in i and i['checkquality'] == True:
                 if not i['source'].lower() in self.hosthqDict and i['quality'] not in ['SD', 'SCR', 'CAM']: i.update({'quality': 'SD'})
-        
+
         local = [i for i in self.sources if 'local' in i and i['local'] == True]
         for i in local: i.update({'language': self._getPrimaryLang() or 'en'})
         self.sources = [i for i in self.sources if not i in local]
@@ -797,7 +797,7 @@ class sources:
         self.sources = filter
 
         filter = []
-        
+
 
         for d in debrid.debrid_resolvers:
             valid_hoster = set([i['source'] for i in self.sources])
@@ -806,9 +806,9 @@ class sources:
         filter += [i for i in self.sources if not i['source'].lower() in self.hostprDict and i['debridonly'] == False]
 
         self.sources = filter
-      
+
         for i in range(len(self.sources)):
-            q = self.sources[i]['quality']            
+            q = self.sources[i]['quality']
             if q == 'HD': self.sources[i].update({'quality': '720p'})
 
         filter = []
@@ -839,26 +839,26 @@ class sources:
 
         filter = [i for i in self.sources if i['source'].lower() in self.hostblockDict and not 'debrid' in i]
         self.sources = [i for i in self.sources if not i in filter]
-        
+
         multi = [i['language'] for i in self.sources]
         multi = [x for y,x in enumerate(multi) if x not in multi[:y]]
         multi = True if len(multi) > 1 else False
 
         if multi == True:
             self.sources = [i for i in self.sources if not i['language'] == 'en'] + [i for i in self.sources if i['language'] == 'en']
-        
+
         self.sources = self.sources[:2000]
 
         extra_info = control.setting('sources.extrainfo')
         prem_identify = control.setting('prem.identify')
         if prem_identify == '': prem_identify = 'blue'
-        prem_identify = self.getPremColor(prem_identify)        
-        
+        prem_identify = self.getPremColor(prem_identify)
+
         for i in range(len(self.sources)):
-                       
+
             if extra_info == 'true': t = source_utils.getFileType(self.sources[i]['url'])
             else: t = None
-            
+
             u = self.sources[i]['url']
 
             p = self.sources[i]['provider']
@@ -866,7 +866,7 @@ class sources:
             q = self.sources[i]['quality']
 
             s = self.sources[i]['source']
-            
+
             s = s.rsplit('.', 1)[0]
 
             l = self.sources[i]['language']
@@ -896,19 +896,19 @@ class sources:
             label = re.sub('\[I\]\s+\[/I\]', ' ', label)
             label = re.sub('\|\s+\|', '|', label)
             label = re.sub('\|(?:\s+|)$', '', label)
-            
-            if d: 
+
+            if d:
                 if not prem_identify == 'nocolor':
                     self.sources[i]['label'] = ('[COLOR %s]' % (prem_identify)) + label.upper() + '[/COLOR]'
                 else: self.sources[i]['label'] = label.upper()
             else: self.sources[i]['label'] = label.upper()
 
-        try: 
+        try:
             if not HEVC == 'true': self.sources = [i for i in self.sources if not 'HEVC' in i['label']]
         except: pass
-            
+
         self.sources = [i for i in self.sources if 'label' in i]
-    
+
         return self.sources
 
 
@@ -972,7 +972,7 @@ class sources:
 
     def sourcesDialog(self, items):
         try:
-            
+
             labels = [i['label'] for i in items]
 
             select = control.selectDialog(labels)
@@ -1116,7 +1116,7 @@ class sources:
         name = control.setting('providers.lang')
         return langDict.get(name, ['en'])
 
-        
+
     def getLocalTitle(self, title, imdb, tvdb, content):
         lang = self._getPrimaryLang()
         if not lang:
@@ -1141,7 +1141,7 @@ class sources:
             return []
 
     def _getPrimaryLang(self):
-        langDict = {'English': 'en', 'German': 'de', 'German+English': 'de', 'French': 'fr', 'French+English': 'fr', 'Portuguese': 'pt', 'Portuguese+English': 'pt', 'Polish': 'pl', 'Polish+English': 'pl', 'Korean': 'ko', 'Korean+English': 'ko', 'Russian': 'ru', 'Russian+English': 'ru', 'Spanish': 'es', 'Spanish+English': 'es', 'Italian': 'it', 'Italian+English': 'it', 'Greek': 'gr', 'Greek+English': 'gr'} 
+        langDict = {'English': 'en', 'German': 'de', 'German+English': 'de', 'French': 'fr', 'French+English': 'fr', 'Portuguese': 'pt', 'Portuguese+English': 'pt', 'Polish': 'pl', 'Polish+English': 'pl', 'Korean': 'ko', 'Korean+English': 'ko', 'Russian': 'ru', 'Russian+English': 'ru', 'Spanish': 'es', 'Spanish+English': 'es', 'Italian': 'it', 'Italian+English': 'it', 'Greek': 'gr', 'Greek+English': 'gr'}
         name = control.setting('providers.lang')
         lang = langDict.get(name)
         return lang

@@ -1,6 +1,6 @@
 '''
     Covenant Add-on
-    Copyright (C) 2016 Covenant
+    Copyright (C) 2017 Covenant
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ import re
 import urllib
 import urlparse
 import json
+import xbmc
 
 from resources.lib.modules import client, cleantitle, directstream
 from resources.lib.modules import source_utils
@@ -32,9 +33,9 @@ class source:
         '''
         self.priority = 0
         self.language = ['en']
-        self.domains = ['putlocker.rs']
-        self.base_link = 'https://putlocker.sk'
-        self.movie_search_path = ('search?keyword=%s')
+        self.domains = ['putlocker.rs', 'putlockertv.to', 'putlockertv.se']
+        self.base_link = 'https://putlockertv.se'
+        self.movie_search_path = ('/search?keyword=%s')
         self.episode_search_path = ('/filter?keyword=%s&sort=post_date:Adesc'
                                     '&type[]=series')
         self.film_path = '/watch/%s'
@@ -239,7 +240,7 @@ class source:
             data = urlparse.parse_qs(url)
             data = dict((i, data[i][0]) for i in data)
             data['sources'] = re.findall("[^', u\]\[]+", data['sources'])
-                        
+
             for i in data['sources']:
                 token = str(self.__token(
                     {'id': i, 'update': 0, 'ts': data['ts']}))
@@ -257,18 +258,16 @@ class source:
                         response = client.request(url, XHR=True)
 
                         sources_list = json.loads(response)['data']
-                        
+
                         for j in sources_list:
-                            
+
                             quality = j['label'] if not j['label'] == '' else 'SD'
-                            #quality = 'HD' if quality in ['720p','1080p'] else 'SD'
                             quality = source_utils.label_to_quality(quality)
 
                             if 'googleapis' in j['file']:
                                 sources.append({'source': 'GVIDEO', 'quality': quality, 'language': 'en', 'url': j['file'], 'direct': True, 'debridonly': False})
                                 continue
 
-                            #source = directstream.googlepass(j['file'])
                             valid, hoster = source_utils.is_host_valid(j['file'], hostDict)
                             urls, host, direct = source_utils.check_directstreams(j['file'], hoster)
                             for x in urls:
@@ -283,20 +282,27 @@ class source:
 
                     elif not grabber_dict['target'] == '':
                         url = 'https:' + grabber_dict['target'] if not grabber_dict['target'].startswith('http') else grabber_dict['target']
-                        #host = re.findall('([\w]+[.][\w]+)$', urlparse.urlparse(url.strip().lower()).netloc)[0]
                         valid, hoster = source_utils.is_host_valid(url, hostDict)
                         if not valid: continue
                         urls, host, direct = source_utils.check_directstreams(url, hoster)
+                        url = urls[0]['url']
+
+                        if 'cloud.to' in host:
+                            headers = {
+                                'Referer': self.base_link
+                            }
+                            url = url + source_utils.append_headers(headers)
+
                         sources.append({
                             'source': hoster,
                             'quality': urls[0]['quality'],
                             'language': 'en',
-                            'url': urls[0]['url'], #url.replace('\/','/'),
+                            'url': url,
                             'direct': False,
                             'debridonly': False
                         })
                 except: pass
-                    
+
             return sources
 
         except Exception:

@@ -18,14 +18,13 @@
 '''
 
 
-import re,sys,cookielib,urllib,urllib2,urlparse,gzip,StringIO,HTMLParser,time,random,base64,xbmc
+import re,sys,ssl,cookielib,urllib,urllib2,urlparse,gzip,StringIO,HTMLParser,time,random,base64,httplib,xbmc
 
 from resources.lib.modules import cache
 from resources.lib.modules import workers
 from resources.lib.modules import dom_parser
 from resources.lib.modules import log_utils
 from resources.lib.modules import utils
-
 
 def request(url, close=True, redirect=True, error=False, proxy=None, post=None, headers=None, mobile=False, XHR=False, limit=None, referer=None, cookie=None, compression=True, output='', timeout='30'):
     try:
@@ -48,7 +47,7 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
 
         if (2, 7, 8) < sys.version_info < (2, 7, 12):
             try:
-                import ssl; ssl_context = ssl.create_default_context()
+                ssl_context = ssl.create_default_context()
                 ssl_context.check_hostname = False
                 ssl_context.verify_mode = ssl.CERT_NONE
                 handlers += [urllib2.HTTPSHandler(context=ssl_context)]
@@ -124,11 +123,9 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
         request = urllib2.Request(url, data=post)
         _add_request_header(request, _headers)
 
-
         try:
             response = urllib2.urlopen(request, timeout=int(timeout))
         except urllib2.HTTPError as response:
-
             if response.code == 503:
                 cf_result = response.read(5242880)
                 try: encoding = response.info().getheader('Content-Encoding')
@@ -139,12 +136,12 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
                 if 'cf-browser-verification' in cf_result:
 
                     netloc = '%s://%s' % (urlparse.urlparse(url).scheme, urlparse.urlparse(url).netloc)
-                    
+
                     if not netloc.endswith('/'): netloc += '/'
 
                     ua = _headers['User-Agent']
 
-                    cf = cache.get(cfcookie().get, 168, netloc, ua, timeout)
+                    cf = cache.get(cfcookie().get, 1, netloc, ua, timeout)
 
                     _headers['Cookie'] = cf
 
@@ -158,6 +155,13 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
             else:
                 log_utils.log('Request-Error (%s): %s' % (str(response.code), url), log_utils.LOGDEBUG)
                 if error == False: return
+
+        except urllib2.URLError as e:
+                if type(e.reason) == ssl.SSLError:
+                    context = ssl._create_unverified_context()
+                    response = urllib2.urlopen(request, timeout=int(timeout), context=context)
+                else:
+                    raise
 
 
         if output == 'cookie':
@@ -191,19 +195,32 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
             except: content = '0'
             response.close()
             return content
-        
+
         if limit == '0':
             result = response.read(224 * 1024)
         elif not limit == None:
             result = response.read(int(limit) * 1024)
         else:
-            result = response.read(5242880)
+            try:
+                result = response.read(5242880)
+            except httplib.IncompleteRead as e:
+                # Patch for misconfigured webserver (see: https://stackoverflow.com/questions/14149100/incompleteread-using-httplib)
+                result = e.partial
 
         try: encoding = response.info().getheader('Content-Encoding')
         except: encoding = None
-        if encoding == 'gzip':
-            result = gzip.GzipFile(fileobj=StringIO.StringIO(result)).read()
 
+        if encoding == 'gzip':
+            try:
+                result = gzip.GzipFile(fileobj=StringIO.StringIO(result)).read()
+            except IOError as e:
+                if e:
+                    log_utils.log('Gzip-Error Unable to decompress(%s), trying request again without compression: %s' % (str(e), url), log_utils.LOGDEBUG)
+                    # Workaround for naming conflict with `request`
+                    current_module = sys.modules[__name__]
+                    return current_module.request(url, close, redirect, error, proxy, post, headers, mobile, XHR, limit, referer, cookie, False, output, timeout)
+                else:
+                    raise
 
         if 'sucuri_cloudproxy_js' in result:
             su = sucuri().get(result)
@@ -250,7 +267,6 @@ def request(url, close=True, redirect=True, error=False, proxy=None, post=None, 
     except Exception as e:
         log_utils.log('Request-Error: (%s) => %s' % (str(e), url), log_utils.LOGDEBUG)
         return
-
 
 def _basic_request(url, headers=None, post=None, timeout='30', limit=None):
     try:
@@ -515,5 +531,5 @@ def _get_keyboard( default="", heading="", hidden=False ):
         return unicode( keyboard.getText(), "utf-8" )
     return default
 
-def removeNonAscii(s): 
+def removeNonAscii(s):
     return "".join(i for i in s if ord(i)<128)

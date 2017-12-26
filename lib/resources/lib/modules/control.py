@@ -243,7 +243,7 @@ def apiLanguage(ret_name=None):
     name = None
     name = setting('api.language')
     if not name: name = 'AUTO'
-    
+
     if name[-1].isupper():
         try: name = xbmc.getLanguage(xbmc.ENGLISH_NAME).split(' ')[0]
         except: pass

@@ -18,7 +18,7 @@
 '''
 
 
-import re,urllib,urlparse,base64
+import re,urllib,urlparse,base64,xbmc
 
 from resources.lib.modules import cleantitle
 from resources.lib.modules import client
@@ -31,7 +31,6 @@ class source:
         self.language = ['en']
         self.domains = ['primewire.ag']
         self.base_link = 'http://www.primewire.ag'
-        self.base_link = 'https://primewire.unblocked.bid'
         self.key_link = '/index.php?search'
         self.moviesearch_link = '/index.php?search_keywords=%s&key=%s&search_section=1'
         self.tvsearch_link = '/index.php?search_keywords=%s&key=%s&search_section=2'
@@ -198,5 +197,3 @@ class source:
 
     def resolve(self, url):
         return url
-
-
