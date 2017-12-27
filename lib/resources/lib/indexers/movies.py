@@ -98,9 +98,9 @@ class movies:
         self.traktwatchlist_link = 'http://api.trakt.tv/users/me/watchlist/movies'
         self.traktfeatured_link = 'http://api.trakt.tv/recommendations/movies?limit=40'
         self.trakthistory_link = 'http://api.trakt.tv/users/me/history/movies?limit=40&page=1'
-        self.imdblists_link = 'http://www.imdb.com/user/ur%s/lists?tab=all&sort=modified:desc&filter=titles' % self.imdb_user
-        self.imdblist_link = 'http://www.imdb.com/list/%s/?view=detail&sort=title:asc&title_type=feature,short,tv_movie,tv_special,video,documentary,game&start=1'
-        self.imdblist2_link = 'http://www.imdb.com/list/%s/?view=detail&sort=created:desc&title_type=feature,short,tv_movie,tv_special,video,documentary,game&start=1'
+        self.imdblists_link = 'http://www.imdb.com/user/ur%s/lists?tab=all&sort=mdfd&order=desc&filter=titles' % self.imdb_user
+        self.imdblist_link = 'http://www.imdb.com/list/%s/?view=detail&sort=alpha,asc&title_type=movie,tvMovie&start=1'
+        self.imdblist2_link = 'http://www.imdb.com/list/%s/?view=detail&sort=date_added,desc&title_type=movie,tvMovie&start=1'
         self.imdbwatchlist_link = 'http://www.imdb.com/user/ur%s/watchlist?sort=alpha,asc' % self.imdb_user
         self.imdbwatchlist2_link = 'http://www.imdb.com/user/ur%s/watchlist?sort=date_added,desc' % self.imdb_user
 
@@ -522,13 +522,13 @@ class movies:
 
             result = result.replace('\n', ' ')
 
-            items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item mode-advanced'})
+            items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item mode-detail'})
             items += client.parseDOM(result, 'div', attrs = {'class': 'list_item.+?'})
         except:
             return
 
         try:
-            next = client.parseDOM(result, 'a', ret='href', attrs = {'class': 'lister-page-next.+?'})
+            next = client.parseDOM(result, 'a', ret='href', attrs = {'class': '.+?lister-page-next.+?'})
 
             if len(next) == 0:
                 next = client.parseDOM(result, 'div', attrs = {'class': 'pagination'})[0]
@@ -671,7 +671,7 @@ class movies:
     def imdb_user_list(self, url):
         try:
             result = client.request(url)
-            items = client.parseDOM(result, 'div', attrs = {'class': 'list_name'})
+            items = client.parseDOM(result, 'li', attrs = {'class': 'ipl-zebra-list__item user-list'})
         except:
             pass
 
@@ -682,7 +682,7 @@ class movies:
                 name = name.encode('utf-8')
 
                 url = client.parseDOM(item, 'a', ret='href')[0]
-                url = url.split('/list/', 1)[-1]
+                url = url.split('/list/', 1)[-1].strip('/')
                 url = self.imdblist_link % url
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')

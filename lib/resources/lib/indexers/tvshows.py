@@ -87,9 +87,9 @@ class tvshows:
         self.traktcollection_link = 'http://api.trakt.tv/users/me/collection/shows'
         self.traktwatchlist_link = 'http://api.trakt.tv/users/me/watchlist/shows'
         self.traktfeatured_link = 'http://api.trakt.tv/recommendations/shows?limit=40'
-        self.imdblists_link = 'http://www.imdb.com/user/ur%s/lists?tab=all&sort=modified:desc&filter=titles' % self.imdb_user
-        self.imdblist_link = 'http://www.imdb.com/list/%s/?view=detail&sort=title:asc&title_type=tv_series,mini_series&start=1'
-        self.imdblist2_link = 'http://www.imdb.com/list/%s/?view=detail&sort=created:desc&title_type=tv_series,mini_series&start=1'
+        self.imdblists_link = 'http://www.imdb.com/user/ur%s/lists?tab=all&sort=mdfd&order=desc&filter=titles' % self.imdb_user
+        self.imdblist_link = 'http://www.imdb.com/list/%s/?view=detail&sort=alpha,asc&title_type=tvSeries,miniSeries&start=1'
+        self.imdblist2_link = 'http://www.imdb.com/list/%s/?view=detail&sort=date_added,desc&title_type=tvSeries,miniSeries&start=1'
         self.imdbwatchlist_link = 'http://www.imdb.com/user/ur%s/watchlist?sort=alpha,asc' % self.imdb_user
         self.imdbwatchlist2_link = 'http://www.imdb.com/user/ur%s/watchlist?sort=date_added,desc' % self.imdb_user
 
@@ -149,19 +149,19 @@ class tvshows:
         navigator.navigator().addDirectoryItem(32603, 'tvSearchnew', 'search.png', 'DefaultTVShows.png')
         try: from sqlite3 import dbapi2 as database
         except: from pysqlite2 import dbapi2 as database
-        
+
         dbcon = database.connect(control.searchFile)
         dbcur = dbcon.cursor()
-             
+
         try:
             dbcur.executescript("CREATE TABLE IF NOT EXISTS tvshow (ID Integer PRIMARY KEY AUTOINCREMENT, term);")
         except:
             pass
-            
+
         dbcur.execute("SELECT * FROM tvshow ORDER BY ID DESC")
-        
+
         lst = []
-        
+
         delete_option = False
         for (id,term) in dbcur.fetchall():
             if term not in str(lst):
@@ -169,12 +169,12 @@ class tvshows:
                 navigator.navigator().addDirectoryItem(term, 'tvSearchterm&name=%s' % term, 'search.png', 'DefaultTVShows.png')
                 lst += [(term)]
         dbcur.close()
-        
+
         if delete_option:
             navigator.navigator().addDirectoryItem(32605, 'clearCacheSearch', 'tools.png', 'DefaultAddonProgram.png')
 
         navigator.navigator().endDirectory()
-        
+
     def search_new(self):
             control.idle()
 
@@ -183,10 +183,10 @@ class tvshows:
             q = k.getText() if k.isConfirmed() else None
 
             if (q == None or q == ''): return
-            
+
             try: from sqlite3 import dbapi2 as database
             except: from pysqlite2 import dbapi2 as database
-            
+
             dbcon = database.connect(control.searchFile)
             dbcur = dbcon.cursor()
             dbcur.execute("INSERT INTO tvshow VALUES (?,?)", (None,q))
@@ -570,13 +570,13 @@ class tvshows:
 
             result = result.replace('\n', ' ')
 
-            items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item mode-advanced'})
+            items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item mode-detail'})
             items += client.parseDOM(result, 'div', attrs = {'class': 'list_item.+?'})
         except:
             return
 
         try:
-            next = client.parseDOM(result, 'a', ret='href', attrs = {'class': 'lister-page-next.+?'})
+            next = client.parseDOM(result, 'a', ret='href', attrs = {'class': '.+?lister-page-next.+?'})
 
             if len(next) == 0:
                 next = client.parseDOM(result, 'div', attrs = {'class': 'pagination'})[0]
@@ -680,7 +680,7 @@ class tvshows:
     def imdb_user_list(self, url):
         try:
             result = client.request(url)
-            items = client.parseDOM(result, 'div', attrs = {'class': 'list_name'})
+            items = client.parseDOM(result, 'li', attrs = {'class': 'ipl-zebra-list__item user-list'})
         except:
             pass
 
@@ -691,7 +691,7 @@ class tvshows:
                 name = name.encode('utf-8')
 
                 url = client.parseDOM(item, 'a', ret='href')[0]
-                url = url.split('/list/', 1)[-1].replace('/', '')
+                url = url = url.split('/list/', 1)[-1].strip('/')
                 url = self.imdblist_link % url
                 url = client.replaceHTMLCodes(url)
                 url = url.encode('utf-8')
@@ -746,7 +746,7 @@ class tvshows:
                 tvdb = tvdb.encode('utf-8')
 
                 if tvdb == None or tvdb == '': raise Exception()
- 
+
                 try: poster = item['image']['original']
                 except: poster = '0'
                 if poster == None or poster == '': poster = '0'
@@ -1256,5 +1256,3 @@ class tvshows:
 
         control.content(syshandle, 'addons')
         control.directory(syshandle, cacheToDisc=True)
-
-
