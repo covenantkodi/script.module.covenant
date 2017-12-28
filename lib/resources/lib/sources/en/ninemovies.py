@@ -327,24 +327,20 @@ class source:
                         # embed = self.__decode_shift(info_dict['target'], -18)
                         embed = info_dict['target']
 
-                        if 'mcloud.to' in embed:
-                            if not 'http:' in embed:
-                                embed = 'http:' + embed
+                        headers = {
+                            'Referer': self.base_link
+                        }
 
-                            headers = {
-                                'Referer': self.base_link
-                            }
+                        embed = embed + source_utils.append_headers(headers)
 
-                            embed = embed + source_utils.append_headers(headers)
-
-                            sources.append({
-                                'source': 'mcloud.to',
-                                'quality': 'HD',
-                                'language': 'en',
-                                'url': embed,
-                                'direct': False,
-                                'debridonly': False
-                            })
+                        sources.append({
+                            'source': 'mcloud.to',
+                            'quality': 'HD',
+                            'language': 'en',
+                            'url': embed,
+                            'direct': False,
+                            'debridonly': False
+                        })
 
                 except Exception:
                     pass

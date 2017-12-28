@@ -195,7 +195,7 @@ class source:
                 key += seed
 
             return key[:output]
-            
+
         except Exception:
             return
 

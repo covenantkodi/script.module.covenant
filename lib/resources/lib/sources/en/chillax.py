@@ -26,8 +26,9 @@ class source:
         self.language = ['en']
         self.domains = ['chillax.ws']
         self.base_link = 'http://chillax.ws'
-        self.referer = 'http://vumoo.li/'
-        self.imdb_path = '/?imdb=%s'
+        # self.referer = 'http://vumoo.li/'
+        self.search_path = '/search/auto?q=%s'
+        # self.imdb_path = '/?imdb=%s'
         self.series_path = '/series/getTvLink?id=%s&s=%s&e=%s'
         self.movie_path = '/movies/getMovieLink?id=%s'
 
@@ -65,22 +66,12 @@ class source:
             data = urlparse.parse_qs(url)
             data = dict((i, data[i][0]) for i in data)
 
-            path = self.imdb_path % data['imdb']
-            url = urlparse.urljoin(self.base_link, path)
-
-            headers = {'Referer': self.referer}
-            response = client.request(url, headers=headers)
-
-            vid_id = re.findall(r'var videoId = \"(.+?)\";', response)[0]
-
             if 'tvshowtitle' in data:
-                path = self.series_path % (vid_id, data['season'], data['episode'])
+                url = self.__get_episode_url(data)
             else:
-                path = self.movie_path % vid_id
+                url = self.__get_movie_url(data)
 
-            url = urlparse.urljoin(self.base_link, path)
-
-            response = client.request(url, headers=headers)
+            response = client.request(url)
 
             links = json.loads(response)
 
@@ -120,5 +111,47 @@ class source:
     def resolve(self, url):
         try:
             return url
+        except Exception:
+            return
+
+    def __get_episode_url(self, data):
+        try:
+            path = self.search_path % urllib.quote_plus(data['tvshowtitle'])
+            url = urlparse.urljoin(self.base_link, path)
+
+            response = client.request(url)
+            searchobj = json.loads(response)
+
+            for obj in searchobj:
+                if obj['title'] == data['tvshowtitle'] and obj['year'] == data['year']:
+                    vid_id = obj['id']
+                    break
+
+            path = self.series_path % (vid_id, data['season'], data['episode'])
+            url = urlparse.urljoin(self.base_link, path)
+
+            return url
+
+        except Exception:
+            return
+
+    def __get_movie_url(self, data):
+        try:
+            path = self.search_path % urllib.quote_plus(data['title'])
+            url = urlparse.urljoin(self.base_link, path)
+
+            response = client.request(url)
+            searchobj = json.loads(response)
+
+            for obj in searchobj:
+                if obj['title'] == data['title'] and obj['year'] == data['year']:
+                    vid_id = obj['id']
+                    break
+
+            path = self.movie_path % vid_id
+            url = urlparse.urljoin(self.base_link, path)
+
+            return url
+
         except Exception:
             return
