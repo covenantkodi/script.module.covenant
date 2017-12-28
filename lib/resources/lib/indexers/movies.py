@@ -522,7 +522,7 @@ class movies:
 
             result = result.replace('\n', ' ')
 
-            items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item mode-detail'})
+            items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item .+?'})
             items += client.parseDOM(result, 'div', attrs = {'class': 'list_item.+?'})
         except:
             return

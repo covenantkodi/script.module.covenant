@@ -570,7 +570,7 @@ class tvshows:
 
             result = result.replace('\n', ' ')
 
-            items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item mode-detail'})
+            items = client.parseDOM(result, 'div', attrs = {'class': 'lister-item .+?'})
             items += client.parseDOM(result, 'div', attrs = {'class': 'list_item.+?'})
         except:
             return
@@ -709,7 +709,7 @@ class tvshows:
             result = client.request(url)
             result = client.parseDOM(result, 'section', attrs = {'id': 'this-seasons-shows'})
 
-            items = client.parseDOM(result, 'li')
+            items = client.parseDOM(result, 'div', attrs = {'class': 'content auto cell'})
             items = [client.parseDOM(i, 'a', ret='href') for i in items]
             items = [i[0] for i in items if len(i) > 0]
             items = [re.findall('/(\d+)/', i) for i in items]
