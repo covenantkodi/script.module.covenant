@@ -31,7 +31,7 @@ from resources.lib.modules import views
 from resources.lib.modules import utils
 from resources.lib.indexers import navigator
 
-import os,sys,re,json,urllib,urlparse,datetime
+import os,sys,re,json,urllib,urlparse,datetime,xbmc
 
 params = dict(urlparse.parse_qsl(sys.argv[2].replace('?',''))) if len(sys.argv) > 1 else dict()
 
@@ -528,7 +528,7 @@ class movies:
             return
 
         try:
-            next = client.parseDOM(result, 'a', ret='href', attrs = {'class': '.+?lister-page-next.+?'})
+            next = client.parseDOM(result, 'a', ret='href', attrs = {'class': '.+?ister-page-nex.+?'})
 
             if len(next) == 0:
                 next = client.parseDOM(result, 'div', attrs = {'class': 'pagination'})[0]
@@ -639,14 +639,13 @@ class movies:
     def imdb_person_list(self, url):
         try:
             result = client.request(url)
-            items = client.parseDOM(result, 'tr', attrs = {'class': '.+? detailed'})
+            items = client.parseDOM(result, 'div', attrs = {'class': '.+?etail'})
         except:
             return
 
         for item in items:
             try:
-                name = client.parseDOM(item, 'a', ret='title')[0]
-                name = client.replaceHTMLCodes(name)
+                name = client.parseDOM(item, 'img', ret='alt')[0]
                 name = name.encode('utf-8')
 
                 url = client.parseDOM(item, 'a', ret='href')[0]
@@ -656,7 +655,7 @@ class movies:
                 url = url.encode('utf-8')
 
                 image = client.parseDOM(item, 'img', ret='src')[0]
-                if not ('._SX' in image or '._SY' in image): raise Exception()
+                # if not ('._SX' in image or '._SY' in image): raise Exception()
                 image = re.sub('(?:_SX|_SY|_UX|_UY|_CR|_AL)(?:\d+|_).+?\.', '_SX500.', image)
                 image = client.replaceHTMLCodes(image)
                 image = image.encode('utf-8')

@@ -327,6 +327,9 @@ class source:
                         # embed = self.__decode_shift(info_dict['target'], -18)
                         embed = info_dict['target']
 
+                        valid, hoster = source_utils.is_host_valid(embed, hostDict)
+                        if not valid: continue
+
                         headers = {
                             'Referer': self.base_link
                         }
@@ -334,8 +337,8 @@ class source:
                         embed = embed + source_utils.append_headers(headers)
 
                         sources.append({
-                            'source': 'mcloud.to',
-                            'quality': 'HD',
+                            'source': hoster,
+                            'quality': '720p', # need a better way of identifying quality
                             'language': 'en',
                             'url': embed,
                             'direct': False,
